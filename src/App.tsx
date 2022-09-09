@@ -1,27 +1,49 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import './assets/scss/global.scss'
 import InputFeild from './cmps/InputFeild'
 import TodoList from './cmps/TodoList'
 import { Todo } from './models'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from './store/index'
+import { bindActionCreators } from 'redux'
+import { actions } from './store/allActions'
 
 const App: React.FC = () => {
-  const [todo, setTodo] = useState<string>('')
-  const [todos, setTodos] = useState<Todo[]>([])
+  const dispatch = useDispatch()
 
-  const handleAdd = (ev: React.FormEvent) => {
+  const { todos } = useSelector((state: RootState) => state.todosModule)
+
+  const { loadTodos, addTodo, removeTodo, updateTodo } = bindActionCreators(
+    actions,
+    dispatch
+  )
+
+  useEffect(() => {
+    loadTodos()
+  }, [])
+
+  const onAddTodo = (ev: React.FormEvent, txt: string | number) => {
     ev.preventDefault()
+    addTodo({ todo: txt, isDone: false })
+  }
 
-    if (todo) {
-      setTodos([...todos, { id: Date.now(), todo, isDone: false }])
-      setTodo('')
-    }
+  const onUpdateTodo = (todoToUpdate: Todo) => {
+    updateTodo(todoToUpdate)
+  }
+
+  const onRemoveTodo = (id: number | string) => {
+    removeTodo(id)
   }
 
   return (
     <div className="App">
       <span className="heading">Todo with Typescript</span>
-      <InputFeild todo={todo} setTodo={setTodo} handleAdd={handleAdd} />
-      <TodoList todos={todos} setTodos={setTodos} />
+      <InputFeild onAddTodo={onAddTodo} />
+      <TodoList
+        todos={todos}
+        onUpdateTodo={onUpdateTodo}
+        onRemoveTodo={onRemoveTodo}
+      />
     </div>
   )
 }

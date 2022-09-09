@@ -1,20 +1,31 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 
 interface Props {
-  todo: string
-  setTodo: React.Dispatch<React.SetStateAction<string>>
-  handleAdd: (ev: React.FormEvent) => void
+  onAddTodo: (ev: React.FormEvent, txt: string | number) => void
+}
+type Field = {
+  txt: string | number
 }
 
-const InputFeild: React.FC<Props> = ({ todo, setTodo, handleAdd }: Props) => {
+const InputFeild: React.FC<Props> = ({ onAddTodo }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const [field, setField] = useState<Field>({ txt: '' })
+
+  const handleChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+    let value =
+      ev.target.type === 'number' ? +ev.target.value || '' : ev.target.value
+
+    setField({ txt: value })
+  }
 
   return (
     <form
       className="input"
       onSubmit={(e) => {
-        handleAdd(e)
+        onAddTodo(e, field.txt)
         inputRef.current?.blur()
+        setField({ txt: '' })
       }}
     >
       <input
@@ -22,8 +33,10 @@ const InputFeild: React.FC<Props> = ({ todo, setTodo, handleAdd }: Props) => {
         type="input"
         placeholder="Enter a task"
         className="input-box"
-        value={todo}
-        onChange={(e) => setTodo(e.target.value)}
+        onChange={handleChange}
+        id="txt"
+        name="txt"
+        value={field.txt}
       />
       <button className="input-submit" type="submit">
         Go

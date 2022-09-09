@@ -4,18 +4,23 @@ import SingleTodo from './SingleTodo'
 
 interface Props {
   todos: Todo[]
-  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>
+  onUpdateTodo: (todoToUpdate: Todo) => void
+  onRemoveTodo: (id: number | string) => void
 }
 
-const TodoList: React.FC<Props> = ({ todos, setTodos }: Props) => {
+const TodoList: React.FC<Props> = ({
+  todos,
+  onUpdateTodo,
+  onRemoveTodo,
+}: Props) => {
   return (
     <div className="todos">
       {todos.map((todo) => (
         <SingleTodo
           todo={todo}
           key={todo.id}
-          todos={todos}
-          setTodos={setTodos}
+          onUpdateTodo={onUpdateTodo}
+          onRemoveTodo={onRemoveTodo}
         />
       ))}
     </div>

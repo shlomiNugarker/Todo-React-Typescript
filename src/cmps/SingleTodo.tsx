@@ -5,52 +5,64 @@ import { MdDone } from 'react-icons/md'
 
 type Props = {
   todo: Todo
-  todos: Todo[]
-  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>
+  onUpdateTodo: (todoToUpdate: Todo) => void
+  onRemoveTodo: (id: number | string) => void
 }
 
-const SingleTodo = ({ todo, todos, setTodos }: Props) => {
-  const [edit, setEdit] = useState<Boolean>(false)
-  const [editTodo, setEditTodo] = useState<string>(todo.todo)
+type Field = {
+  txt: string | number
+}
 
-  const handleDone = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, isDone: !todo.isDone } : todo
-      )
-    )
+const SingleTodo = ({ todo, onUpdateTodo, onRemoveTodo }: Props) => {
+  const [isEdit, setIsEdit] = useState<Boolean>(false)
+
+  const handleDone = (todo: Todo) => {
+    const todoToUpdate = { ...todo, isDone: !todo.isDone }
+    onUpdateTodo(todoToUpdate)
   }
 
-  const handleDelete = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id !== id))
+  const [field, setField] = useState<Field>({ txt: todo.todo })
+
+  const handleChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+    let value =
+      ev.target.type === 'number' ? +ev.target.value || '' : ev.target.value
+    setField({ txt: value })
   }
 
-  const handleEdit = (ev: React.FormEvent, id: number) => {
+  const handleDelete = (id: string | number | undefined) => {
+    if (id) {
+      onRemoveTodo(id)
+    }
+  }
+
+  const handleEdit = (ev: React.FormEvent, todo: Todo) => {
     ev.preventDefault()
-
-    setTodos(
-      todos.map((todo) => (todo.id === id ? { ...todo, todo: editTodo } : todo))
-    )
-    setEdit(false)
+    const todoToUpdate = {
+      ...todo,
+      todo: field.txt,
+    }
+    onUpdateTodo(todoToUpdate)
+    setField({ txt: '' })
+    setIsEdit((prev) => !prev)
   }
 
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
-
-    return () => {}
-  }, [edit])
+  }, [isEdit])
 
   return (
-    <form className="todos-single" onSubmit={(e) => handleEdit(e, todo.id)}>
-      {edit ? (
+    <form className="todos-single" onSubmit={(e) => handleEdit(e, todo)}>
+      {isEdit ? (
         <input
           ref={inputRef}
-          value={editTodo}
+          value={field.txt}
+          id="txt"
+          name="txt"
           type="text"
           className="todos-single-text"
-          onChange={(e) => setEditTodo(e.target.value)}
+          onChange={handleChange}
         />
       ) : todo.isDone ? (
         <s className="todos-single-text">{todo.todo}</s>
@@ -62,8 +74,8 @@ const SingleTodo = ({ todo, todos, setTodos }: Props) => {
         <span
           className="icon"
           onClick={() => {
-            if (!edit && !todo.isDone) {
-              setEdit(!edit)
+            if (!isEdit && !todo.isDone) {
+              setIsEdit(!isEdit)
             }
           }}
         >
@@ -72,7 +84,7 @@ const SingleTodo = ({ todo, todos, setTodos }: Props) => {
         <span className="icon" onClick={() => handleDelete(todo.id)}>
           <AiFillDelete />
         </span>
-        <span className="icon" onClick={() => handleDone(todo.id)}>
+        <span className="icon" onClick={() => handleDone(todo)}>
           <MdDone />
         </span>
       </div>
